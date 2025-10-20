@@ -1,7 +1,8 @@
-import { useEffect, useMemo, useState } from 'react'
+import { Fragment, useEffect, useMemo, useState } from 'react'
 import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from 'recharts'
 import { useVolkswagenRecallsQuery } from '@/lib/api/nhtsa'
 import { formatDate, formatNumber } from '@/lib/format'
+import { Skeleton } from '@/components/ui/skeleton'
 
 const PIE_COLORS = ['#2563eb', '#1d4ed8', '#65a30d', '#d97706', '#dc2626', '#7c3aed']
 const PAGE_SIZE_OPTIONS = [10, 20, 50]
@@ -102,48 +103,60 @@ export const RecallsPage = () => {
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           <label className="grid gap-1 text-sm font-medium">
             Ano
-            <select
-              value={yearFilter}
-              onChange={(event) => setYearFilter(event.target.value)}
-              className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm shadow-sm outline-none transition focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-            >
-              <option value="">Todos</option>
-              {filterOptions.years.map((year) => (
-                <option key={year} value={year}>
-                  {year}
-                </option>
-              ))}
-            </select>
+            {recallsQuery.isLoading ? (
+              <Skeleton className="h-10 w-full rounded-md" />
+            ) : (
+              <select
+                value={yearFilter}
+                onChange={(event) => setYearFilter(event.target.value)}
+                className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm shadow-sm outline-none transition focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              >
+                <option value="">Todos</option>
+                {filterOptions.years.map((year) => (
+                  <option key={year} value={year}>
+                    {year}
+                  </option>
+                ))}
+              </select>
+            )}
           </label>
           <label className="grid gap-1 text-sm font-medium">
             Modelo
-            <select
-              value={modelFilter}
-              onChange={(event) => setModelFilter(event.target.value)}
-              className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm shadow-sm outline-none transition focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-            >
-              <option value="">Todos</option>
-              {filterOptions.models.map((model) => (
-                <option key={model} value={model}>
-                  {model}
-                </option>
-              ))}
-            </select>
+            {recallsQuery.isLoading ? (
+              <Skeleton className="h-10 w-full rounded-md" />
+            ) : (
+              <select
+                value={modelFilter}
+                onChange={(event) => setModelFilter(event.target.value)}
+                className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm shadow-sm outline-none transition focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              >
+                <option value="">Todos</option>
+                {filterOptions.models.map((model) => (
+                  <option key={model} value={model}>
+                    {model}
+                  </option>
+                ))}
+              </select>
+            )}
           </label>
           <label className="grid gap-1 text-sm font-medium sm:col-span-2 lg:col-span-1 xl:col-span-2">
             Componente
-            <select
-              value={componentFilter}
-              onChange={(event) => setComponentFilter(event.target.value)}
-              className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm shadow-sm outline-none transition focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-            >
-              <option value="">Todos</option>
-              {filterOptions.components.map((component) => (
-                <option key={component} value={component}>
-                  {component}
-                </option>
-              ))}
-            </select>
+            {recallsQuery.isLoading ? (
+              <Skeleton className="h-10 w-full rounded-md" />
+            ) : (
+              <select
+                value={componentFilter}
+                onChange={(event) => setComponentFilter(event.target.value)}
+                className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm shadow-sm outline-none transition focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              >
+                <option value="">Todos</option>
+                {filterOptions.components.map((component) => (
+                  <option key={component} value={component}>
+                    {component}
+                  </option>
+                ))}
+              </select>
+            )}
           </label>
         </div>
       </section>
@@ -155,21 +168,25 @@ export const RecallsPage = () => {
             Visualize quais sistemas concentram a maior parte dos recalls recentes.
           </p>
           <div className="mt-4 h-72">
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie dataKey="value" data={recallsByComponent} nameKey="component" innerRadius={50} outerRadius={100}>
-                  {recallsByComponent.map((entry, index) => (
-                    <Cell key={entry.component} fill={PIE_COLORS[index % PIE_COLORS.length]} />
-                  ))}
-                </Pie>
-                <Tooltip
-                  formatter={(value: number) => [`${value} recall(s)`, 'Total']}
-                  contentStyle={{ borderRadius: 8, borderColor: '#1d4ed8' }}
-                />
-              </PieChart>
-            </ResponsiveContainer>
+            {recallsQuery.isLoading ? (
+              <Skeleton className="h-full w-full rounded-lg" />
+            ) : (
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie dataKey="value" data={recallsByComponent} nameKey="component" innerRadius={50} outerRadius={100}>
+                    {recallsByComponent.map((entry, index) => (
+                      <Cell key={entry.component} fill={PIE_COLORS[index % PIE_COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip
+                    formatter={(value: number) => [`${value} recall(s)`, 'Total']}
+                    contentStyle={{ borderRadius: 8, borderColor: '#1d4ed8' }}
+                  />
+                </PieChart>
+              </ResponsiveContainer>
+            )}
           </div>
-          {recallsByComponent.length ? (
+          {!recallsQuery.isLoading && recallsByComponent.length ? (
             <div className="mt-4 max-h-32 overflow-y-auto pr-1">
               <div className="flex flex-wrap gap-2 text-xs">
                 {recallsByComponent.map((entry, index) => (
@@ -259,13 +276,29 @@ export const RecallsPage = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
-                {recallsQuery.isLoading ? (
-                  <tr>
-                    <td className="px-4 py-8 text-center text-muted-foreground" colSpan={4}>
-                      Carregando recalls...
-                    </td>
-                  </tr>
-                ) : visibleRecalls.length ? (
+                {recallsQuery.isLoading
+                  ? Array.from({ length: 6 }).map((_, index) => (
+                      <Fragment key={index}>
+                        <tr className="hover:bg-muted/40">
+                          <td className="px-4 py-3">
+                            <Skeleton className="h-5 w-24" />
+                          </td>
+                          <td className="px-4 py-3">
+                            <div className="flex items-center gap-2">
+                              <Skeleton className="h-5 w-32" />
+                              <Skeleton className="h-3 w-10" />
+                            </div>
+                          </td>
+                          <td className="px-4 py-3">
+                            <Skeleton className="h-5 w-40" />
+                          </td>
+                          <td className="px-4 py-3">
+                            <Skeleton className="h-5 w-full" />
+                          </td>
+                        </tr>
+                      </Fragment>
+                    ))
+                  : visibleRecalls.length ? (
                   visibleRecalls.map((recall) => (
                     <tr
                       key={`${recall.Model}-${recall.ModelYear}-${recall.Component}-${recall.ReportReceivedDate}`}

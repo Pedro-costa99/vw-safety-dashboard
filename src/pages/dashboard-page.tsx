@@ -20,6 +20,7 @@ import {
   useVolkswagenRecallsQuery,
 } from '@/lib/api/nhtsa'
 import { formatDate, formatNumber, parseNhtsaDate } from '@/lib/format'
+import { Skeleton } from '@/components/ui/skeleton'
 
 const vinFormSchema = z.object({
   vin: z
@@ -135,16 +136,31 @@ export const DashboardPage = () => {
   return (
     <div className="space-y-8">
       <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        {cards.map((card) => (
-          <article
-            key={card.title}
-            className="rounded-lg border border-border bg-card/80 p-4 shadow-sm transition hover:border-primary/40"
-          >
-            <h3 className="text-sm font-medium text-muted-foreground">{card.title}</h3>
-            <p className="mt-2 text-2xl font-semibold">{card.value}</p>
-            <p className="mt-1 text-xs text-muted-foreground">{card.helper}</p>
-          </article>
-        ))}
+        {cards.map((card) => {
+          const isLoading =
+            card.title === 'Modelos Volkswagen'
+              ? modelsQuery.isLoading
+              : card.title === 'Tipos de veículos'
+              ? vehicleTypesQuery.isLoading
+              : card.title === 'Recalls ativos' || card.title === 'Último recall'
+              ? recallsQuery.isLoading
+              : false
+
+          return (
+            <article
+              key={card.title}
+              className="rounded-lg border border-border bg-card/80 p-4 shadow-sm transition hover:border-primary/40"
+            >
+              <h3 className="text-sm font-medium text-muted-foreground">{card.title}</h3>
+              {isLoading ? (
+                <Skeleton className="mt-3 h-7 w-24" />
+              ) : (
+                <p className="mt-2 text-2xl font-semibold">{card.value}</p>
+              )}
+              <p className="mt-1 text-xs text-muted-foreground">{card.helper}</p>
+            </article>
+          )
+        })}
       </section>
 
       <section className="grid gap-6 xl:grid-cols-[2fr_3fr]">
@@ -158,18 +174,22 @@ export const DashboardPage = () => {
             </div>
           </div>
           <div className="h-64">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={recallsByYear}>
-                <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
-                <XAxis dataKey="year" tickLine={false} axisLine={false} />
-                <YAxis width={40} tickLine={false} axisLine={false} />
-                <Tooltip
-                  cursor={{ fill: 'rgba(37, 99, 235, 0.08)' }}
-                  contentStyle={{ borderRadius: 8, borderColor: '#1d4ed8' }}
-                />
-                <Bar dataKey="total" fill="#2563eb" radius={[4, 4, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
+            {recallsQuery.isLoading ? (
+              <Skeleton className="h-full w-full rounded-lg" />
+            ) : (
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={recallsByYear}>
+                  <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
+                  <XAxis dataKey="year" tickLine={false} axisLine={false} />
+                  <YAxis width={40} tickLine={false} axisLine={false} />
+                  <Tooltip
+                    cursor={{ fill: 'rgba(37, 99, 235, 0.08)' }}
+                    contentStyle={{ borderRadius: 8, borderColor: '#1d4ed8' }}
+                  />
+                  <Bar dataKey="total" fill="#2563eb" radius={[4, 4, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            )}
           </div>
           {!recallsByYear.length && !recallsQuery.isLoading ? (
             <p className="mt-4 text-sm text-muted-foreground">

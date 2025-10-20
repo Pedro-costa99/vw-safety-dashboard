@@ -1,6 +1,7 @@
-import { useDeferredValue, useEffect, useMemo, useState } from 'react'
+import { Fragment, useDeferredValue, useEffect, useMemo, useState } from 'react'
 import { DEFAULT_MAKE, useModelsForMakeQuery, useVehicleTypesForMakeQuery } from '@/lib/api/nhtsa'
 import { formatNumber } from '@/lib/format'
+import { Skeleton } from '@/components/ui/skeleton'
 
 const MODEL_PAGE_SIZE_OPTIONS = [10, 20, 40]
 
@@ -73,13 +74,17 @@ export const ModelsPage = () => {
               Encontramos {formatNumber(models.length)} modelos cadastrados para a marca na base federal.
             </p>
           </div>
-          <input
-            type="search"
-            value={searchTerm}
-            onChange={(event) => setSearchTerm(event.target.value)}
-            placeholder="Buscar por nome do modelo"
-            className="w-full max-w-sm rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm outline-none transition focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-          />
+          {modelsQuery.isLoading ? (
+            <Skeleton className="h-10 w-full max-w-sm" />
+          ) : (
+            <input
+              type="search"
+              value={searchTerm}
+              onChange={(event) => setSearchTerm(event.target.value)}
+              placeholder="Buscar por nome do modelo"
+              className="w-full max-w-sm rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm outline-none transition focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+            />
+          )}
         </div>
 
         <div className="mt-6 mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -139,13 +144,20 @@ export const ModelsPage = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
-                {modelsQuery.isLoading ? (
-                  <tr>
-                    <td className="px-4 py-8 text-center text-muted-foreground" colSpan={2}>
-                      Carregando modelos...
-                    </td>
-                  </tr>
-              ) : visibleModels.length ? (
+                {modelsQuery.isLoading
+                  ? Array.from({ length: 6 }).map((_, index) => (
+                      <Fragment key={index}>
+                        <tr className="hover:bg-muted/40">
+                          <td className="px-4 py-3">
+                            <Skeleton className="h-5 w-48" />
+                          </td>
+                          <td className="px-4 py-3">
+                            <Skeleton className="h-5 w-32" />
+                          </td>
+                        </tr>
+                      </Fragment>
+                    ))
+                  : visibleModels.length ? (
                 visibleModels.map((model) => (
                   <tr key={`${model.Make_ID}-${model.Model_Name}`} className="hover:bg-muted/40">
                     <td className="px-4 py-3 font-medium">{model.Model_Name}</td>
@@ -158,7 +170,8 @@ export const ModelsPage = () => {
                     Nenhum modelo encontrado para a busca realizada.
                   </td>
                 </tr>
-              )}
+              )
+              }
             </tbody>
           </table>
         </div>
@@ -171,7 +184,9 @@ export const ModelsPage = () => {
         </p>
         <div className="mt-4 flex flex-wrap gap-2">
           {vehicleTypesQuery.isLoading ? (
-            <span className="text-sm text-muted-foreground">Carregando tipos...</span>
+            Array.from({ length: 6 }).map((_, index) => (
+              <Skeleton key={index} className="h-7 w-36 rounded-full" />
+            ))
           ) : vehicleTypes.length ? (
             vehicleTypes.map((type) => (
               <span
