@@ -1,9 +1,10 @@
-# VW Safety Dashboard
+﻿# VW Safety Dashboard
 
 Aplicação web em React para monitorar recalls e dados homologados de veículos Volkswagen a partir dos registros oficiais da NHTSA (agência de segurança viária dos Estados Unidos). Este README reúne tudo o que o time precisa para clonar, instalar, entender o fluxo de dados e manter o projeto.
 
 ## Visão geral
 
+![Fluxo principal do dashboard](public/gifs/demo.gif)
 - Dashboard autenticado que consolida indicadores de recalls, modelos cadastrados e estatísticas por ano.
 - Consulta direta aos endpoints públicos da NHTSA para modelos, tipos de veículo, decodificação de VIN e campanhas de recall.
 - Páginas dedicadas para exploração de modelos e de recalls com filtros, paginação e visualizações gráficas.
